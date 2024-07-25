@@ -1,7 +1,7 @@
 ## Interface: 40400
 ## Title: TransmogOutfitter
 ## Notes: Adds a 3D popup for character transmogrification.
-## Author: YourName
+## Author: L3ca
 ## Version: 1.0
 
 TransmogOutfitter_3DModelFrame.lua
