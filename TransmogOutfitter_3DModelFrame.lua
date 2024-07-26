@@ -1,5 +1,3 @@
--- TransmogOutfitter_3DModelFrame.lua
-
 local addonName, addonTable = ...
 
 addonTable.slotButtons = {
@@ -34,6 +32,23 @@ addonTable.slotNames = {
     ["RangedButton"] = "Ranged",
     ["TabardButton"] = "Tabard",
     ["ShirtButton"] = "Shirt"
+}
+
+addonTable.slotIDs = {
+    ["HeadButton"] = 1,
+    ["ShoulderButton"] = 3,
+    ["ChestButton"] = 5,
+    ["WaistButton"] = 6,
+    ["LegsButton"] = 7,
+    ["FeetButton"] = 8,
+    ["WristButton"] = 9,
+    ["HandsButton"] = 10,
+    ["BackButton"] = 15,
+    ["MainHandButton"] = 16,
+    ["SecondaryHandButton"] = 17,
+    ["RangedButton"] = 18,
+    ["TabardButton"] = 19,
+    ["ShirtButton"] = 4,
 }
 
 local function Create3DFrame()
@@ -232,23 +247,6 @@ end
 
 addonTable.Create3DFrame = Create3DFrame
 
-local function UpdateTransmogModel()
-    print("Updating Transmog Model")
-    addonTable.my3DModel:Undress() -- Reset the model
-    for slot, name in pairs(addonTable.slotNames) do
-        local itemID = GetInventoryItemID("player", slot)
-        if itemID then
-            print("Item ID found for slot:", slot, name, "Item ID:", itemID)
-            addonTable.ApplyItemToModel(itemID, name)
-        else
-            print("No item found in slot:", slot, name)
-        end
-    end
-    addonTable.my3DModel:RefreshUnit() -- Refresh the model
-end
-
-addonTable.UpdateTransmogModel = UpdateTransmogModel
-
 local function ApplyItemToModel(itemID, slotName)
     if itemID and itemID ~= 0 then
         print("Trying on item ID:", itemID, "for slot:", slotName)
@@ -263,13 +261,18 @@ addonTable.ApplyItemToModel = ApplyItemToModel
 local function UpdateTransmogModel()
     print("Updating Transmog Model")
     addonTable.my3DModel:Undress() -- Reset the model
-    for slot, name in pairs(addonTable.slotNames) do
-        local itemID = GetInventoryItemID("player", slot)
-        if itemID then
-            print("Item ID found for slot:", slot, name, "Item ID:", itemID)
-            addonTable.ApplyItemToModel(itemID, name)
+    for button, name in pairs(addonTable.slotNames) do
+        local slotID = addonTable.slotIDs[button]
+        if slotID then
+            local itemID = GetInventoryItemID("player", slotID)
+            if itemID then
+                print("Item ID found for slot:", button, name, "Item ID:", itemID)
+                addonTable.ApplyItemToModel(itemID, name)
+            else
+                print("No item found in slot:", button, name)
+            end
         else
-            print("No item found in slot:", slot, name)
+            print("No slot ID found for button:", button)
         end
     end
     addonTable.my3DModel:RefreshUnit() -- Refresh the model
