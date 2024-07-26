@@ -27,7 +27,6 @@ local function OnEvent(self, event, ...)
     end
 end
 
-
 local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 eventFrame:RegisterEvent("TRANSMOGRIFY_OPEN")
@@ -45,8 +44,6 @@ addonTable.my3DModel = my3DModel
 my3DFrame:Show()
 my3DModel:SetUnit("player")
 addonTable.UpdateTransmogModel()
-
-print("Addon loaded and 3D frame should be visible")
 
 -- Initially hide the 3D frame
 my3DFrame:Hide()

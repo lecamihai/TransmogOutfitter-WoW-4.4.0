@@ -16,7 +16,6 @@ local function SavePreset(index)
     end
     addonTable.savedPresets[index] = preset
     TransmogOutfitter_SavedPresets = addonTable.savedPresets
-    print("Preset " .. index .. " saved.")
 end
 
 -- Function to load a preset
@@ -29,7 +28,6 @@ local function LoadPreset(index)
         addonTable.ApplyItemToModel(itemID, name)
     end
     addonTable.my3DModel:RefreshUnit()
-    print("Preset " .. index .. " loaded.")
 end
 
 -- Function to create the preset UI

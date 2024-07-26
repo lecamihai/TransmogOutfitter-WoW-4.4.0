@@ -4,7 +4,7 @@ local addonName, addonTable = ...
 
 -- Example utility function
 local function PrintMessage(message)
-    print(addonName .. ": " .. message)
+
 end
 
 addonTable.PrintMessage = PrintMessage

@@ -1,3 +1,4 @@
+-- TransmogOutfitter_3DModelFrame.lua
 local addonName, addonTable = ...
 
 addonTable.slotButtons = {
@@ -249,30 +250,24 @@ addonTable.Create3DFrame = Create3DFrame
 
 local function ApplyItemToModel(itemID, slotName)
     if itemID and itemID ~= 0 then
-        print("Trying on item ID:", itemID, "for slot:", slotName)
         addonTable.my3DModel:TryOn("item:" .. itemID)
     else
-        print("No valid item ID found for slot:", slotName)
     end
 end
 
 addonTable.ApplyItemToModel = ApplyItemToModel
 
 local function UpdateTransmogModel()
-    print("Updating Transmog Model")
     addonTable.my3DModel:Undress() -- Reset the model
     for button, name in pairs(addonTable.slotNames) do
         local slotID = addonTable.slotIDs[button]
         if slotID then
             local itemID = GetInventoryItemID("player", slotID)
             if itemID then
-                print("Item ID found for slot:", button, name, "Item ID:", itemID)
                 addonTable.ApplyItemToModel(itemID, name)
             else
-                print("No item found in slot:", button, name)
             end
         else
-            print("No slot ID found for button:", button)
         end
     end
     addonTable.my3DModel:RefreshUnit() -- Refresh the model
@@ -305,23 +300,13 @@ local function PrintSelectedItemName()
         local baseSourceID, baseVisualID, appliedSourceID, appliedVisualID, pendingSourceID, pendingVisualID, hasUndo, isHideVisual, itemSubclass = C_Transmog.GetSlotVisualInfo(transmogLocation)
         
         -- Debug print statements
-        print("Checking slot ID:", slotID, "Slot Name:", slotName)
-        print("TransmogLocation:", transmogLocation)
-        print("BaseSourceID:", baseSourceID, "BaseVisualID:", baseVisualID)
-        print("AppliedSourceID:", appliedSourceID, "AppliedVisualID:", appliedVisualID)
-        print("PendingSourceID:", pendingSourceID, "PendingVisualID:", pendingVisualID)
-        print("HasUndo:", hasUndo, "IsHideVisual:", isHideVisual, "ItemSubclass:", itemSubclass)
-        
         if pendingSourceID and pendingSourceID ~= 0 then
             local sourceInfo = C_TransmogCollection.GetSourceInfo(pendingSourceID)
             if sourceInfo then
-                print("Selected item for slot", slotName, ":", sourceInfo.name)
                 addonTable.ApplyItemToModel(sourceInfo.itemID, slotName)
             else
-                print("Selected item info not available for slot", slotName)
             end
         else
-            print("No item selected for slot", slotName)
         end
     end
 end
@@ -336,17 +321,13 @@ local function HookTransmogSlots()
             for buttonName, slotName in pairs(addonTable.slotNames) do
                 local slot = transmogFrame[buttonName]
                 if slot then
-                    slot:HookScript("OnClick", function()
-                        print(slotName, "slot clicked")
+                    slot:HookScript("OnMouseUp", function()
                         addonTable.PrintSelectedItemName()
                     end)
-                    print("Hooked", slotName, "slot")
                 else
-                    print("Slot", slotName, "not found")
                 end
             end
         else
-            print("WardrobeTransmogFrame not found, retrying...")
             C_Timer.After(1, HookTransmogSlots) -- Retry after 1 second
         end
     end)

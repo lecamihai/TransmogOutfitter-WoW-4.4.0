@@ -1,5 +1,4 @@
 -- TransmogOutfitter_Presets.lua
-
 local addonName, addonTable = ...
 
 addonTable.savedPresets = addonTable.savedPresets or {}
@@ -8,31 +7,48 @@ local function LoadPresets()
     if TransmogOutfitter_SavedPresets then
         addonTable.savedPresets = TransmogOutfitter_SavedPresets
     else
-        -- Initialize with default presets if no saved presets
         addonTable.savedPresets = {}
     end
 end
 
-local function SaveCurrentOutfit()
+addonTable.LoadPresets = LoadPresets
+
+local function SavePreset(index)
     local preset = {}
-    for slot, name in pairs(addonTable.slotNames) do
-        local itemID = GetInventoryItemID("player", slot)
-        if itemID then
-            preset[name] = itemID
+    for buttonName, slotName in pairs(addonTable.slotNames) do
+        local slotID = addonTable.slotIDs[buttonName]
+        if slotID then
+            local itemID = GetInventoryItemID("player", slotID)
+            if itemID then
+                preset[slotName] = itemID
+            end
         end
     end
-    table.insert(addonTable.savedPresets, preset)
+    addonTable.savedPresets[index] = preset
     TransmogOutfitter_SavedPresets = addonTable.savedPresets
-    print("Outfit saved. Total presets: " .. #addonTable.savedPresets)
+
+    -- Update the corresponding preset 3D model
+    local presetModel = addonTable.modelFrames[index]
+    presetModel:Undress()
+    for slotName, itemID in pairs(preset) do
+        presetModel:TryOn("item:" .. itemID)
+    end
 end
 
-local function LoadOutfit(preset)
+addonTable.SavePreset = SavePreset
+
+local function LoadPreset(index)
+    local preset = addonTable.savedPresets[index]
+    if not preset then return end
+    
     addonTable.my3DModel:Undress()
-    for name, itemID in pairs(preset) do
-        addonTable.ApplyItemToModel(itemID, name)
+    for slotName, itemID in pairs(preset) do
+        addonTable.ApplyItemToModel(itemID, slotName)
     end
     addonTable.my3DModel:RefreshUnit()
 end
+
+addonTable.LoadPreset = LoadPreset
 
 local function ShowSavedPresets(frame)
     local presetsFrame = CreateFrame("Frame", nil, frame, "BackdropTemplate")
@@ -56,7 +72,7 @@ local function ShowSavedPresets(frame)
         button:SetSize(180, 20)
         button:SetPoint("TOP", presetsFrame, "TOP", 0, yOffset)
         button:SetText("Preset " .. i)
-        button:SetScript("OnClick", function() LoadOutfit(preset) end)
+        button:SetScript("OnClick", function() LoadPreset(i) end)
         yOffset = yOffset - 25
     end
 
@@ -64,10 +80,7 @@ local function ShowSavedPresets(frame)
     saveButton:SetSize(180, 20)
     saveButton:SetPoint("BOTTOM", presetsFrame, "BOTTOM", 0, 10)
     saveButton:SetText("Save Current Outfit")
-    saveButton:SetScript("OnClick", SaveCurrentOutfit)
+    saveButton:SetScript("OnClick", SavePreset)
 end
 
-addonTable.LoadPresets = LoadPresets
-addonTable.SaveCurrentOutfit = SaveCurrentOutfit
-addonTable.LoadOutfit = LoadOutfit
 addonTable.ShowSavedPresets = ShowSavedPresets
