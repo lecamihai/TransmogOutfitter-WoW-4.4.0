@@ -1,4 +1,8 @@
+-- TransmogOutfitter_3DModelFrame.lua
+
 local addonName, addonTable = ...
+
+addonTable.textureChanges = {}
 
 addonTable.slotButtons = {
     "HeadButton",
@@ -52,8 +56,6 @@ addonTable.slotIDs = {
 }
 
 local function Create3DFrame()
-    print("Creating 3D Frame")
-
     -- Create the main frame with BackdropTemplate
     local frame = CreateFrame("Frame", "My3DFrame", UIParent, "BackdropTemplate")
     frame:SetSize(300, 400)
@@ -241,7 +243,6 @@ local function Create3DFrame()
         end
     end)
 
-    print("3D Frame created successfully")
     return frame, model
 end
 
@@ -249,33 +250,27 @@ addonTable.Create3DFrame = Create3DFrame
 
 local function ApplyItemToModel(itemID, slotName)
     if itemID and itemID ~= 0 then
-        print("Trying on item ID:", itemID, "for slot:", slotName)
         addonTable.my3DModel:TryOn("item:" .. itemID)
-    else
-        print("No valid item ID found for slot:", slotName)
+        -- Log the change
+        addonTable.textureChanges[slotName] = itemID
     end
 end
 
 addonTable.ApplyItemToModel = ApplyItemToModel
 
+-- Update function to use logged changes
 local function UpdateTransmogModel()
-    print("Updating Transmog Model")
-    addonTable.my3DModel:Undress() -- Reset the model
+    addonTable.my3DModel:Undress()
     for button, name in pairs(addonTable.slotNames) do
         local slotID = addonTable.slotIDs[button]
         if slotID then
             local itemID = GetInventoryItemID("player", slotID)
             if itemID then
-                print("Item ID found for slot:", button, name, "Item ID:", itemID)
                 addonTable.ApplyItemToModel(itemID, name)
-            else
-                print("No item found in slot:", button, name)
             end
-        else
-            print("No slot ID found for button:", button)
         end
     end
-    addonTable.my3DModel:RefreshUnit() -- Refresh the model
+    addonTable.my3DModel:RefreshUnit()
 end
 
 addonTable.UpdateTransmogModel = UpdateTransmogModel
@@ -303,31 +298,17 @@ local function PrintSelectedItemName()
         -- Create TransmogLocation object for each slot
         local transmogLocation = TransmogUtil.CreateTransmogLocation(slotID, Enum.TransmogType.Appearance, Enum.TransmogModification.Main)
         local baseSourceID, baseVisualID, appliedSourceID, appliedVisualID, pendingSourceID, pendingVisualID, hasUndo, isHideVisual, itemSubclass = C_Transmog.GetSlotVisualInfo(transmogLocation)
-        
-        -- Debug print statements
-        print("Checking slot ID:", slotID, "Slot Name:", slotName)
-        print("TransmogLocation:", transmogLocation)
-        print("BaseSourceID:", baseSourceID, "BaseVisualID:", baseVisualID)
-        print("AppliedSourceID:", appliedSourceID, "AppliedVisualID:", appliedVisualID)
-        print("PendingSourceID:", pendingSourceID, "PendingVisualID:", pendingVisualID)
-        print("HasUndo:", hasUndo, "IsHideVisual:", isHideVisual, "ItemSubclass:", itemSubclass)
-        
+
         if pendingSourceID and pendingSourceID ~= 0 then
             local sourceInfo = C_TransmogCollection.GetSourceInfo(pendingSourceID)
             if sourceInfo then
-                print("Selected item for slot", slotName, ":", sourceInfo.name)
                 addonTable.ApplyItemToModel(sourceInfo.itemID, slotName)
-            else
-                print("Selected item info not available for slot", slotName)
             end
-        else
-            print("No item selected for slot", slotName)
         end
     end
 end
 
 addonTable.PrintSelectedItemName = PrintSelectedItemName
-
 
 local function HookTransmogSlots()
     C_Timer.After(1, function()
@@ -337,20 +318,14 @@ local function HookTransmogSlots()
                 local slot = transmogFrame[buttonName]
                 if slot then
                     slot:HookScript("OnClick", function()
-                        print(slotName, "slot clicked")
                         addonTable.PrintSelectedItemName()
                     end)
-                    print("Hooked", slotName, "slot")
-                else
-                    print("Slot", slotName, "not found")
                 end
             end
         else
-            print("WardrobeTransmogFrame not found, retrying...")
             C_Timer.After(1, HookTransmogSlots) -- Retry after 1 second
         end
     end)
 end
 
 addonTable.HookTransmogSlots = HookTransmogSlots
-

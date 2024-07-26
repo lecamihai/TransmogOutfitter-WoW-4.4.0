@@ -2,34 +2,37 @@
 
 local addonName, addonTable = ...
 
--- Number of presets
 local NUM_PRESETS = 6
 
--- Function to save the current outfit to a preset
 local function SavePreset(index)
-    local preset = {}
-    for slot, name in pairs(addonTable.slotNames) do
-        local itemID = GetInventoryItemID("player", slot)
-        if itemID then
-            preset[name] = itemID
-        end
-    end
+    local preset = {
+        textures = addonTable.textureChanges
+    }
     addonTable.savedPresets[index] = preset
     TransmogOutfitter_SavedPresets = addonTable.savedPresets
     print("Preset " .. index .. " saved.")
+    
+    -- Update the corresponding preset 3D model
+    local presetModel = addonTable.modelFrames[index]
+    for slotName, itemID in pairs(addonTable.textureChanges) do
+        presetModel:TryOn("item:" .. itemID)
+    end
 end
 
--- Function to load a preset
+
 local function LoadPreset(index)
     local preset = addonTable.savedPresets[index]
-    if not preset then return end
-    
+    if not preset then 
+        addonTable.PrintMessage("Preset " .. index .. " not found.")
+        return 
+    end
+
     addonTable.my3DModel:Undress()
-    for name, itemID in pairs(preset) do
-        addonTable.ApplyItemToModel(itemID, name)
+    for slotName, itemID in pairs(preset.textures) do
+        addonTable.ApplyItemToModel(itemID, slotName)
     end
     addonTable.my3DModel:RefreshUnit()
-    print("Preset " .. index .. " loaded.")
+    addonTable.PrintMessage("Preset " .. index .. " loaded.")
 end
 
 -- Function to create the preset UI

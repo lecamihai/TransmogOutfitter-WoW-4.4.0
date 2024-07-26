@@ -1,5 +1,4 @@
 -- TransmogOutfitter_Main.lua
-
 local addonName, addonTable = ...
 
 -- Create the main frame and handle events
@@ -8,16 +7,16 @@ local my3DFrame, my3DModel
 local function OnEvent(self, event, ...)
     if event == "PLAYER_EQUIPMENT_CHANGED" then
         local slotID = ...
-        addonTable.PrintSelectedItemName(slotID)
+        addonTable.UpdateTransmogModel()
     elseif event == "TRANSMOGRIFY_OPEN" then
         addonTable.HookTransmogSlots()
-        addonTable.PrintSelectedItemName(1) -- Initialize with head slot
+        addonTable.UpdateTransmogModel() -- Initialize with all slots
         addonTable.my3DFrame:Show() -- Show 3D frame when Transmogrify window is opened
     elseif event == "TRANSMOGRIFY_CLOSE" then
         addonTable.my3DFrame:Hide() -- Hide 3D frame when Transmogrify window is closed
     elseif event == "TRANSMOGRIFY_UPDATE" then
         local slotID = ...
-        addonTable.PrintSelectedItemName(slotID)
+        addonTable.UpdateTransmogModel()
     elseif event == "ADDON_LOADED" then
         local addon = ...
         if addon == addonName then
@@ -26,7 +25,6 @@ local function OnEvent(self, event, ...)
         end
     end
 end
-
 
 local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
@@ -45,8 +43,6 @@ addonTable.my3DModel = my3DModel
 my3DFrame:Show()
 my3DModel:SetUnit("player")
 addonTable.UpdateTransmogModel()
-
-print("Addon loaded and 3D frame should be visible")
 
 -- Initially hide the 3D frame
 my3DFrame:Hide()
