@@ -144,11 +144,9 @@ local function Create3DFrame()
 
     local function OnMouseDown(self, button)
         if button == "RightButton" then
-            print("Right button down - start rotating")
             isRotating = true
             lastMouseX, lastMouseY = GetCursorPosition()
         elseif button == "LeftButton" then
-            print("Left button down - start moving camera")
             isCameraMoving = true
             lastMouseX, lastMouseY = GetCursorPosition()
         end
@@ -156,10 +154,8 @@ local function Create3DFrame()
 
     local function OnMouseUp(self, button)
         if button == "RightButton" then
-            print("Right button up - stop rotating")
             isRotating = false
         elseif button == "LeftButton" then
-            print("Left button up - stop moving camera")
             isCameraMoving = false
         end
     end
@@ -171,7 +167,6 @@ local function Create3DFrame()
             currentRotation = currentRotation + deltaX * rotationSpeed
             model:SetRotation(currentRotation)
             lastMouseX, lastMouseY = currentMouseX, currentMouseY
-            print("Rotating: currentRotation = " .. currentRotation)
         end
 
         if isCameraMoving then
@@ -186,7 +181,6 @@ local function Create3DFrame()
 
             model:SetPosition(0, 0, currentPitch / 100) -- Adjust the divisor to control sensitivity
             lastMouseX, lastMouseY = currentMouseX, currentMouseY
-            print("Moving Camera: currentPitch = " .. currentPitch)
         end
 
         if frame.isSizing then
@@ -224,7 +218,13 @@ local function Create3DFrame()
     presetsButton:SetSize(100, 20)
     presetsButton:SetPoint("RIGHT", titleText, "LEFT", -10, 0)
     presetsButton:SetText("Saved Presets")
-    presetsButton:SetScript("OnClick", function() addonTable.ShowSavedPresets(frame) end)
+    presetsButton:SetScript("OnClick", function()
+        if addonTable.presetFrame:IsShown() then
+            addonTable.presetFrame:Hide()
+        else
+            addonTable.presetFrame:Show()
+        end
+    end)
 
     print("3D Frame created successfully")
     return frame, model

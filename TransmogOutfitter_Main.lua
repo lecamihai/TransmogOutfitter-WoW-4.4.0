@@ -8,24 +8,21 @@ local my3DFrame, my3DModel
 local function OnEvent(self, event, ...)
     if event == "PLAYER_EQUIPMENT_CHANGED" then
         local slotID = ...
-        if slotID == 1 then -- Head slot
-            print("Head slot changed")
-            addonTable.PrintSelectedItemName()
-        end
+        addonTable.PrintSelectedItemName(slotID)
     elseif event == "TRANSMOGRIFY_OPEN" then
-        print("TRANSMOGRIFY_OPEN event triggered")
         addonTable.HookTransmogSlots()
-        addonTable.PrintSelectedItemName()
+        addonTable.PrintSelectedItemName(1) -- Initialize with head slot
+        addonTable.my3DFrame:Show()
     elseif event == "TRANSMOGRIFY_CLOSE" then
-        print("TRANSMOGRIFY_CLOSE event triggered")
+        addonTable.my3DFrame:Hide()
     elseif event == "TRANSMOGRIFY_UPDATE" then
-        print("TRANSMOGRIFY_UPDATE event triggered")
-        addonTable.PrintSelectedItemName()
+        local slotID = ...
+        addonTable.PrintSelectedItemName(slotID)
     elseif event == "ADDON_LOADED" then
         local addon = ...
         if addon == addonName then
-            addonTable.LoadPresets() -- Load presets when addon is loaded
-            addonTable.CreatePresetUI(my3DFrame)
+            addonTable.LoadPresets()
+            addonTable.CreatePresetUI(addonTable.my3DFrame)
         end
     end
 end

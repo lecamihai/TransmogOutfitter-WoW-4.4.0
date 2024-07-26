@@ -34,7 +34,7 @@ end
 
 -- Function to create the preset UI
 local function CreatePresetUI(parentFrame)
-    local presetFrame = CreateFrame("Frame", nil, parentFrame, "BackdropTemplate")
+    local presetFrame = CreateFrame("Frame", "PresetFrame", parentFrame, "BackdropTemplate")
     presetFrame:SetBackdrop({
         bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
         edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -66,16 +66,15 @@ local function CreatePresetUI(parentFrame)
         button:SetSize(presetWidth, 20)
         button:SetPoint("TOP", modelFrame, "BOTTOM", 0, -5)
         button:SetText("Preset " .. i)
-        button:SetScript("OnClick", function() LoadPreset(i) end)
+        button:SetScript("OnClick", function() addonTable.LoadPreset(i) end)
 
         local saveButton = CreateFrame("Button", nil, modelFrame, "UIPanelButtonTemplate")
         saveButton:SetSize(presetWidth, 20)
         saveButton:SetPoint("TOP", button, "BOTTOM", 0, -5)
         saveButton:SetText("Save Preset " .. i)
-        saveButton:SetScript("OnClick", function() SavePreset(i) end)
+        saveButton:SetScript("OnClick", function() addonTable.SavePreset(i) end)
     end
 
-    -- Adjust the size of the preset frame based on the number of presets
     local numRows = math.ceil(NUM_PRESETS / maxColumns)
     local numCols = math.min(NUM_PRESETS, maxColumns)
     local frameWidth = 20 + numCols * (presetWidth + 10) - 10
@@ -83,7 +82,9 @@ local function CreatePresetUI(parentFrame)
     presetFrame:SetSize(frameWidth, frameHeight)
 
     presetFrame:SetPoint("TOPLEFT", parentFrame, "TOPRIGHT", 10, 0)
+    presetFrame:Hide()
 
+    addonTable.presetFrame = presetFrame
     addonTable.modelFrames = modelFrames
 end
 
