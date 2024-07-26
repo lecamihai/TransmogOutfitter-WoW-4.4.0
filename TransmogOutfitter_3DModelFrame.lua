@@ -127,9 +127,9 @@ local function Create3DFrame()
 
     local isDragging = false
     local lastMouseX, lastMouseY
-    local rotationSpeed = 0.05 -- Rotation speed
+    local rotationSpeed = 0.02 -- Rotation speed
     local zoomSpeed = 0.1 -- Zoom speed
-    local pitchSpeed = 0.05 -- Reduced pitch speed for finer control
+    local pitchSpeed = 0.2 -- Reduced pitch speed for finer control
     local isRotating = false -- Flag for rotating model
     local isCameraMoving = false -- Flag for moving camera
     local currentRotation = 0 -- Current rotation angle
