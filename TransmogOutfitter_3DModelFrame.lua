@@ -259,21 +259,12 @@ addonTable.ApplyItemToModel = ApplyItemToModel
 
 local function UpdateTransmogModel()
     addonTable.my3DModel:Undress() -- Reset the model
-    for button, name in pairs(addonTable.slotNames) do
-        local slotID = addonTable.slotIDs[button]
-        if slotID then
-            local itemID = GetInventoryItemID("player", slotID)
-            if itemID then
-                addonTable.ApplyItemToModel(itemID, name)
-            else
-            end
-        else
-        end
-    end
+    addonTable.PrintSelectedItemName()
     addonTable.my3DModel:RefreshUnit() -- Refresh the model
 end
 
 addonTable.UpdateTransmogModel = UpdateTransmogModel
+
 
 local function PrintSelectedItemName()
     -- List of transmog slots
@@ -299,19 +290,31 @@ local function PrintSelectedItemName()
         local transmogLocation = TransmogUtil.CreateTransmogLocation(slotID, Enum.TransmogType.Appearance, Enum.TransmogModification.Main)
         local baseSourceID, baseVisualID, appliedSourceID, appliedVisualID, pendingSourceID, pendingVisualID, hasUndo, isHideVisual, itemSubclass = C_Transmog.GetSlotVisualInfo(transmogLocation)
         
-        -- Debug print statements
         if pendingSourceID and pendingSourceID ~= 0 then
             local sourceInfo = C_TransmogCollection.GetSourceInfo(pendingSourceID)
             if sourceInfo then
                 addonTable.ApplyItemToModel(sourceInfo.itemID, slotName)
-            else
             end
         else
+            -- Handle default appearance
+            if baseSourceID and baseSourceID ~= 0 then
+                local sourceInfo = C_TransmogCollection.GetSourceInfo(baseSourceID)
+                if sourceInfo then
+                    addonTable.ApplyItemToModel(sourceInfo.itemID, slotName)
+                end
+            else
+                -- No transmog applied, use the base item
+                local itemID = GetInventoryItemID("player", slotID)
+                if itemID then
+                    addonTable.ApplyItemToModel(itemID, slotName)
+                end
+            end
         end
     end
 end
 
 addonTable.PrintSelectedItemName = PrintSelectedItemName
+
 
 
 local function HookTransmogSlots()
@@ -325,6 +328,7 @@ local function HookTransmogSlots()
                         addonTable.PrintSelectedItemName()
                     end)
                 else
+                    C_Timer.After(1, HookTransmogSlots) -- Retry after 1 second
                 end
             end
         else

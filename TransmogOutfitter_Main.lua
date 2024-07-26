@@ -27,6 +27,7 @@ local function OnEvent(self, event, ...)
     end
 end
 
+
 local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 eventFrame:RegisterEvent("TRANSMOGRIFY_OPEN")
