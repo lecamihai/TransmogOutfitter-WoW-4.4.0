@@ -281,44 +281,76 @@ end
 addonTable.UpdateTransmogModel = UpdateTransmogModel
 
 local function PrintSelectedItemName()
-    local transmogLocation = TransmogUtil.CreateTransmogLocation(1, Enum.TransmogType.Appearance, Enum.TransmogModification.Main)
-    local baseSourceID, baseVisualID, appliedSourceID, appliedVisualID, pendingSourceID = C_Transmog.GetSlotVisualInfo(transmogLocation)
-    
-    if pendingSourceID and pendingSourceID ~= 0 then
-        local sourceInfo = C_TransmogCollection.GetSourceInfo(pendingSourceID)
-        if sourceInfo then
-            print("Selected hat item:", sourceInfo.name)
-            addonTable.ApplyItemToModel(sourceInfo.itemID, "Head")
+    -- List of transmog slots
+    local transmogLocations = {
+        [1] = "HeadSlot", -- Head
+        [3] = "ShoulderSlot", -- Shoulders
+        [5] = "ChestSlot", -- Chest
+        [6] = "WaistSlot", -- Waist
+        [7] = "LegsSlot", -- Legs
+        [8] = "FeetSlot", -- Feet
+        [9] = "WristSlot", -- Wrist
+        [10] = "HandsSlot", -- Hands
+        [15] = "BackSlot", -- Back
+        [16] = "MainHandSlot", -- Main Hand
+        [17] = "SecondaryHandSlot", -- Off Hand
+        [18] = "RangedSlot", -- Ranged
+        [19] = "TabardSlot", -- Tabard
+        [4] = "ShirtSlot" -- Shirt
+    }
+
+    for slotID, slotName in pairs(transmogLocations) do
+        -- Create TransmogLocation object for each slot
+        local transmogLocation = TransmogUtil.CreateTransmogLocation(slotID, Enum.TransmogType.Appearance, Enum.TransmogModification.Main)
+        local baseSourceID, baseVisualID, appliedSourceID, appliedVisualID, pendingSourceID, pendingVisualID, hasUndo, isHideVisual, itemSubclass = C_Transmog.GetSlotVisualInfo(transmogLocation)
+        
+        -- Debug print statements
+        print("Checking slot ID:", slotID, "Slot Name:", slotName)
+        print("TransmogLocation:", transmogLocation)
+        print("BaseSourceID:", baseSourceID, "BaseVisualID:", baseVisualID)
+        print("AppliedSourceID:", appliedSourceID, "AppliedVisualID:", appliedVisualID)
+        print("PendingSourceID:", pendingSourceID, "PendingVisualID:", pendingVisualID)
+        print("HasUndo:", hasUndo, "IsHideVisual:", isHideVisual, "ItemSubclass:", itemSubclass)
+        
+        if pendingSourceID and pendingSourceID ~= 0 then
+            local sourceInfo = C_TransmogCollection.GetSourceInfo(pendingSourceID)
+            if sourceInfo then
+                print("Selected item for slot", slotName, ":", sourceInfo.name)
+                addonTable.ApplyItemToModel(sourceInfo.itemID, slotName)
+            else
+                print("Selected item info not available for slot", slotName)
+            end
         else
-            print("Selected item info not available")
+            print("No item selected for slot", slotName)
         end
-    else
-        print("No item selected")
     end
 end
 
 addonTable.PrintSelectedItemName = PrintSelectedItemName
 
+
 local function HookTransmogSlots()
     C_Timer.After(1, function()
         local transmogFrame = WardrobeTransmogFrame
         if transmogFrame then
-            local slot = transmogFrame.HeadSlot
-            if slot then
-                slot:HookScript("OnClick", function()
-                    print("Head slot clicked")
-                    addonTable.PrintSelectedItemName()
-                end)
-                print("Hooked head slot")
-            else
-                print("Head slot not found")
+            for buttonName, slotName in pairs(addonTable.slotNames) do
+                local slot = transmogFrame[buttonName]
+                if slot then
+                    slot:HookScript("OnClick", function()
+                        print(slotName, "slot clicked")
+                        addonTable.PrintSelectedItemName()
+                    end)
+                    print("Hooked", slotName, "slot")
+                else
+                    print("Slot", slotName, "not found")
+                end
             end
         else
             print("WardrobeTransmogFrame not found, retrying...")
             C_Timer.After(1, HookTransmogSlots) -- Retry after 1 second
-            return
         end
     end)
 end
 
 addonTable.HookTransmogSlots = HookTransmogSlots
+
