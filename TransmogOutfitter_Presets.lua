@@ -15,15 +15,25 @@ addonTable.LoadPresets = LoadPresets
 
 local function SavePreset(index)
     local preset = {}
+    preset.name = UnitName("player") -- Save the character's name as the preset name
+
     for buttonName, slotName in pairs(addonTable.slotNames) do
         local slotID = addonTable.slotIDs[buttonName]
         if slotID then
+            local transmogLocation = TransmogUtil.CreateTransmogLocation(slotID, Enum.TransmogType.Appearance, Enum.TransmogModification.Main)
+            local _, _, _, _, pendingSourceID, _, _, _, _ = C_Transmog.GetSlotVisualInfo(transmogLocation)
             local itemID = GetInventoryItemID("player", slotID)
-            if itemID then
+            if pendingSourceID and pendingSourceID ~= 0 then
+                local sourceInfo = C_TransmogCollection.GetSourceInfo(pendingSourceID)
+                if sourceInfo then
+                    preset[slotName] = sourceInfo.itemID
+                end
+            elseif itemID then
                 preset[slotName] = itemID
             end
         end
     end
+
     addonTable.savedPresets[index] = preset
     TransmogOutfitter_SavedPresets = addonTable.savedPresets
 
@@ -71,8 +81,8 @@ local function ShowSavedPresets(frame)
         local button = CreateFrame("Button", nil, presetsFrame, "UIPanelButtonTemplate")
         button:SetSize(180, 20)
         button:SetPoint("TOP", presetsFrame, "TOP", 0, yOffset)
-        button:SetText("Preset " .. i)
-        button:SetScript("OnClick", function() LoadPreset(i) end)
+        button:SetText(preset.name or "Preset " .. i) -- Show the character's name or preset index
+        button:SetScript("OnClick", function() addonTable.LoadPreset(i) end)
         yOffset = yOffset - 25
     end
 
@@ -80,7 +90,12 @@ local function ShowSavedPresets(frame)
     saveButton:SetSize(180, 20)
     saveButton:SetPoint("BOTTOM", presetsFrame, "BOTTOM", 0, 10)
     saveButton:SetText("Save Current Outfit")
-    saveButton:SetScript("OnClick", SavePreset)
+    saveButton:SetScript("OnClick", function()
+        local index = #addonTable.savedPresets + 1
+        addonTable.SavePreset(index)
+        presetsFrame:Hide() -- Refresh the presets list
+        ShowSavedPresets(frame)
+    end)
 end
 
 addonTable.ShowSavedPresets = ShowSavedPresets

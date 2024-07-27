@@ -1,34 +1,7 @@
--- TransmogOutfitter_PresetsUI.lua
-
 local addonName, addonTable = ...
 
 -- Number of presets
 local NUM_PRESETS = 6
-
--- Function to save the current outfit to a preset
-local function SavePreset(index)
-    local preset = {}
-    for slot, name in pairs(addonTable.slotNames) do
-        local itemID = GetInventoryItemID("player", slot)
-        if itemID then
-            preset[name] = itemID
-        end
-    end
-    addonTable.savedPresets[index] = preset
-    TransmogOutfitter_SavedPresets = addonTable.savedPresets
-end
-
--- Function to load a preset
-local function LoadPreset(index)
-    local preset = addonTable.savedPresets[index]
-    if not preset then return end
-    
-    addonTable.my3DModel:Undress()
-    for name, itemID in pairs(preset) do
-        addonTable.ApplyItemToModel(itemID, name)
-    end
-    addonTable.my3DModel:RefreshUnit()
-end
 
 -- Function to create the preset UI
 local function CreatePresetUI(parentFrame)
@@ -63,7 +36,7 @@ local function CreatePresetUI(parentFrame)
         local button = CreateFrame("Button", nil, modelFrame, "UIPanelButtonTemplate")
         button:SetSize(presetWidth, 20)
         button:SetPoint("TOP", modelFrame, "BOTTOM", 0, -5)
-        button:SetText("Preset " .. i)
+        button:SetText("Load Preset " .. i)
         button:SetScript("OnClick", function() addonTable.LoadPreset(i) end)
 
         local saveButton = CreateFrame("Button", nil, modelFrame, "UIPanelButtonTemplate")
@@ -87,5 +60,3 @@ local function CreatePresetUI(parentFrame)
 end
 
 addonTable.CreatePresetUI = CreatePresetUI
-addonTable.SavePreset = SavePreset
-addonTable.LoadPreset = LoadPreset

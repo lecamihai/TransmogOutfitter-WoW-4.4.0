@@ -289,33 +289,34 @@ local function PrintSelectedItemName()
         -- Create TransmogLocation object for each slot
         local transmogLocation = TransmogUtil.CreateTransmogLocation(slotID, Enum.TransmogType.Appearance, Enum.TransmogModification.Main)
         local baseSourceID, baseVisualID, appliedSourceID, appliedVisualID, pendingSourceID, pendingVisualID, hasUndo, isHideVisual, itemSubclass = C_Transmog.GetSlotVisualInfo(transmogLocation)
-        
-        if pendingSourceID and pendingSourceID ~= 0 then
+
+        local itemID = nil
+        if pendingSourceID and pendingSourceID ~= 0 and not isHideVisual then
             local sourceInfo = C_TransmogCollection.GetSourceInfo(pendingSourceID)
             if sourceInfo then
-                addonTable.ApplyItemToModel(sourceInfo.itemID, slotName)
+                itemID = sourceInfo.itemID
+            end
+        elseif appliedSourceID and appliedSourceID ~= 0 and not isHideVisual then
+            local sourceInfo = C_TransmogCollection.GetSourceInfo(appliedSourceID)
+            if sourceInfo then
+                itemID = sourceInfo.itemID
+            end
+        elseif baseSourceID and baseSourceID ~= 0 then
+            local sourceInfo = C_TransmogCollection.GetSourceInfo(baseSourceID)
+            if sourceInfo then
+                itemID = sourceInfo.itemID
             end
         else
-            -- Handle default appearance
-            if baseSourceID and baseSourceID ~= 0 then
-                local sourceInfo = C_TransmogCollection.GetSourceInfo(baseSourceID)
-                if sourceInfo then
-                    addonTable.ApplyItemToModel(sourceInfo.itemID, slotName)
-                end
-            else
-                -- No transmog applied, use the base item
-                local itemID = GetInventoryItemID("player", slotID)
-                if itemID then
-                    addonTable.ApplyItemToModel(itemID, slotName)
-                end
-            end
+            itemID = GetInventoryItemID("player", slotID)
+        end
+
+        if itemID then
+            addonTable.ApplyItemToModel(itemID, slotName)
         end
     end
 end
 
 addonTable.PrintSelectedItemName = PrintSelectedItemName
-
-
 
 local function HookTransmogSlots()
     C_Timer.After(1, function()
