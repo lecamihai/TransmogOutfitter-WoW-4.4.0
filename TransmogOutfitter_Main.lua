@@ -1,4 +1,4 @@
-
+-- TransmogOutfitter_Main.lua
 local addonName, addonTable = ...
 
 -- Create the main frame and handle events
@@ -14,6 +14,7 @@ local function OnEvent(self, event, ...)
             addonTable.LoadPresets()
             addonTable.CreatePresetUI(addonTable.my3DFrame)
             addonTable.my3DFrame:Hide()
+            print("Addon loaded and presets initialized.")
         end
     elseif event == "PLAYER_EQUIPMENT_CHANGED" then
         local slotID = ...
@@ -22,6 +23,8 @@ local function OnEvent(self, event, ...)
         addonTable.HookTransmogSlots()
         addonTable.PrintSelectedItemName(1) -- Initialize with head slot
         addonTable.my3DFrame:Show()
+        addonTable.LoadPresets()
+        print("Transmog window opened, presets loaded.")
     elseif event == "TRANSMOGRIFY_CLOSE" then
         addonTable.my3DFrame:Hide()
     elseif event == "TRANSMOGRIFY_UPDATE" then

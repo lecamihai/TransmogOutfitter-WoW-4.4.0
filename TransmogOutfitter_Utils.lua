@@ -1,3 +1,4 @@
+-- TransmogOutfitter_Utils.lua
 local addonName, addonTable = ...
 
 local NUM_PRESETS = 6

@@ -1,3 +1,4 @@
+-- TransmogOutfitter_Presets.lua
 local addonName, addonTable = ...
 
 addonTable.savedPresets = addonTable.savedPresets or {}
@@ -5,8 +6,13 @@ addonTable.savedPresets = addonTable.savedPresets or {}
 local function LoadPresets()
     if TransmogOutfitter_SavedPresets then
         addonTable.savedPresets = TransmogOutfitter_SavedPresets
+        print("Loaded presets:", addonTable.savedPresets)
+        for index, preset in ipairs(addonTable.savedPresets) do
+            print("Loading preset index:", index, "with data:", preset)
+        end
     else
         addonTable.savedPresets = {}
+        print("No presets found, initializing empty presets.")
     end
 end
 
@@ -14,13 +20,14 @@ addonTable.LoadPresets = LoadPresets
 
 local function SavePresets()
     TransmogOutfitter_SavedPresets = addonTable.savedPresets
+    print("Saved presets:", TransmogOutfitter_SavedPresets)
 end
 
 addonTable.SavePresets = SavePresets
 
 local function SavePreset(index)
     local preset = {}
-    preset.name = UnitName("player") -- Save the character's name as the preset name
+    preset.name = UnitName("player")
 
     for buttonName, slotID in pairs(addonTable.slotNames) do
         if slotID then
@@ -131,6 +138,8 @@ local function LoadPreset(index)
     if WardrobeTransmogFrame and WardrobeTransmogFrame.Update then
         WardrobeTransmogFrame:Update()
     end
+
+    print("Preset loaded for index:", index)
 end
 
 addonTable.LoadPreset = LoadPreset
