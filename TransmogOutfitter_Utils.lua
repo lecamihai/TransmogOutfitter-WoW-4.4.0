@@ -1,4 +1,3 @@
--- TransmogOutfitter_Utils.lua
 local addonName, addonTable = ...
 
 local NUM_PRESETS = 6
@@ -36,7 +35,7 @@ local function CreatePresetUI(parentFrame)
         local button = CreateFrame("Button", nil, modelFrame, "UIPanelButtonTemplate")
         button:SetSize(presetWidth, 20)
         button:SetPoint("TOP", modelFrame, "BOTTOM", 0, -5)
-        button:SetText("Load Preset " .. i)
+        button:SetText(addonTable.savedPresets[i] and addonTable.savedPresets[i].name or "Load Preset " .. i)
         button:SetScript("OnClick", function() addonTable.LoadPreset(i) end)
 
         local saveButton = CreateFrame("Button", nil, modelFrame, "UIPanelButtonTemplate")
@@ -63,7 +62,7 @@ local function CreatePresetUI(parentFrame)
         addonTable.savedPresets = {}
         addonTable.SavePresets()
         presetFrame:Hide()
-        ShowSavedPresets(parentFrame)
+        addonTable.ShowSavedPresets(parentFrame)
     end)
 
     addonTable.presetFrame = presetFrame
@@ -71,3 +70,26 @@ local function CreatePresetUI(parentFrame)
 end
 
 addonTable.CreatePresetUI = CreatePresetUI
+
+local function ShowSavedPresets(frame)
+    if not addonTable.presetFrame then
+        addonTable.CreatePresetUI(frame)
+    end
+
+    local presetsFrame = addonTable.presetFrame
+    local modelFrames = addonTable.modelFrames
+
+    for i, preset in ipairs(addonTable.savedPresets) do
+        local model = modelFrames[i]
+        model:Undress()
+        for slotID, data in pairs(preset) do
+            if data.itemID then
+                model:TryOn("item:" .. data.itemID)
+            end
+        end
+    end
+
+    presetsFrame:Show()
+end
+
+addonTable.ShowSavedPresets = ShowSavedPresets

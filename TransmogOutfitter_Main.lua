@@ -1,8 +1,9 @@
--- TransmogOutfitter_Main.lua
 local addonName, addonTable = ...
 
 -- Create the main frame and handle events
 local my3DFrame, my3DModel
+
+local NUM_PRESETS = 6 -- Add this line to define the number of presets
 
 local function OnEvent(self, event, ...)
     local arg1 = ...
@@ -21,9 +22,12 @@ local function OnEvent(self, event, ...)
         addonTable.PrintSelectedItemName(slotID)
     elseif event == "TRANSMOGRIFY_OPEN" then
         addonTable.HookTransmogSlots()
-        addonTable.PrintSelectedItemName(1) -- Initialize with head slot
         addonTable.my3DFrame:Show()
-        addonTable.LoadPresets()
+        addonTable.LoadPresets() -- Ensure presets are loaded
+        for i = 1, NUM_PRESETS do
+            addonTable.LoadPreset(i) -- Load each preset model
+        end
+        addonTable.PrintSelectedItemName(1) -- Initialize with head slot
         print("Transmog window opened, presets loaded.")
     elseif event == "TRANSMOGRIFY_CLOSE" then
         addonTable.my3DFrame:Hide()

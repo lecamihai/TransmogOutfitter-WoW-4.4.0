@@ -65,7 +65,7 @@ local function Create3DFrame()
     -- Create the main frame with BackdropTemplate
     local frame = CreateFrame("Frame", "My3DFrame", UIParent, "BackdropTemplate")
     frame:SetSize(300, 400)
-    frame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 10, -10) -- Position for easier visibility
+    frame:SetPoint("CENTER", UIParent, "CENTER", 100, 200) -- Position for easier visibility
     frame:EnableMouse(true)
     frame:SetMovable(true)
     frame:SetResizable(true)

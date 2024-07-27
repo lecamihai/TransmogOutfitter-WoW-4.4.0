@@ -7,6 +7,5 @@
 
 TransmogOutfitter_3DModelFrame.lua
 TransmogOutfitter_Presets.lua
-TransmogOutfitter_PresetsUI.lua
 TransmogOutfitter_Utils.lua
 TransmogOutfitter_Main.lua

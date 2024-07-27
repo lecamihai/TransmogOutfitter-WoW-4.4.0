@@ -9,6 +9,15 @@ local function LoadPresets()
         print("Loaded presets:", addonTable.savedPresets)
         for index, preset in ipairs(addonTable.savedPresets) do
             print("Loading preset index:", index, "with data:", preset)
+            if addonTable.modelFrames and addonTable.modelFrames[index] then
+                local model = addonTable.modelFrames[index]
+                model:Undress()
+                for slotID, data in pairs(preset) do
+                    if data.itemID then
+                        model:TryOn("item:" .. data.itemID)
+                    end
+                end
+            end
         end
     else
         addonTable.savedPresets = {}
