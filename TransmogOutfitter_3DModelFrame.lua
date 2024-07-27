@@ -1,41 +1,10 @@
 -- TransmogOutfitter_3DModelFrame.lua
 local addonName, addonTable = ...
 
-addonTable.slotButtons = {
-    "HeadButton",
-    "ShoulderButton",
-    "ChestButton",
-    "WaistButton",
-    "LegsButton",
-    "FeetButton",
-    "WristButton",
-    "HandsButton",
-    "BackButton",
-    "MainHandButton",
-    "SecondaryHandButton",
-    "RangedButton",
-    "TabardButton",
-    "ShirtButton"
-}
+addonTable = addonTable or {}
 
+-- Slot names to slot IDs mapping
 addonTable.slotNames = {
-    ["HeadButton"] = "Head",
-    ["ShoulderButton"] = "Shoulder",
-    ["ChestButton"] = "Chest",
-    ["WaistButton"] = "Waist",
-    ["LegsButton"] = "Legs",
-    ["FeetButton"] = "Feet",
-    ["WristButton"] = "Wrist",
-    ["HandsButton"] = "Hands",
-    ["BackButton"] = "Back",
-    ["MainHandButton"] = "Main Hand",
-    ["SecondaryHandButton"] = "Off Hand",
-    ["RangedButton"] = "Ranged",
-    ["TabardButton"] = "Tabard",
-    ["ShirtButton"] = "Shirt"
-}
-
-addonTable.slotIDs = {
     ["HeadButton"] = 1,
     ["ShoulderButton"] = 3,
     ["ChestButton"] = 5,
@@ -49,7 +18,25 @@ addonTable.slotIDs = {
     ["SecondaryHandButton"] = 17,
     ["RangedButton"] = 18,
     ["TabardButton"] = 19,
-    ["ShirtButton"] = 4,
+    ["ShirtButton"] = 4
+}
+
+-- Slot IDs to slot names mapping
+addonTable.slotIDs = {
+    [1] = "HeadButton",
+    [3] = "ShoulderButton",
+    [5] = "ChestButton",
+    [6] = "WaistButton",
+    [7] = "LegsButton",
+    [8] = "FeetButton",
+    [9] = "WristButton",
+    [10] = "HandsButton",
+    [15] = "BackButton",
+    [16] = "MainHandButton",
+    [17] = "SecondaryHandButton",
+    [18] = "RangedButton",
+    [19] = "TabardButton",
+    [4] = "ShirtButton"
 }
 
 -- Function to update the size of the 3D model
@@ -75,8 +62,6 @@ end
 
 -- Function to create the 3D frame
 local function Create3DFrame()
-    print("Creating 3D Frame")
-
     -- Create the main frame with BackdropTemplate
     local frame = CreateFrame("Frame", "My3DFrame", UIParent, "BackdropTemplate")
     frame:SetSize(300, 400)
@@ -274,7 +259,6 @@ local function Create3DFrame()
     -- Initial size update
     UpdateModelSize(frame)
 
-    print("3D Frame created successfully")
     return frame, model
 end
 
@@ -282,8 +266,15 @@ addonTable.Create3DFrame = Create3DFrame
 
 local function ApplyItemToModel(itemID, slotName)
     if itemID and itemID ~= 0 then
+        if slotName == "RangedButton" then
+            -- Hide main hand and off hand when ranged weapon is equipped
+            addonTable.my3DModel:UndressSlot(16)
+            addonTable.my3DModel:UndressSlot(17)
+        elseif slotName == "MainHandButton" or slotName == "SecondaryHandButton" then
+            -- Hide ranged weapon when main hand or off hand is equipped
+            addonTable.my3DModel:UndressSlot(18)
+        end
         addonTable.my3DModel:TryOn("item:" .. itemID)
-    else
     end
 end
 
@@ -297,7 +288,8 @@ end
 
 addonTable.UpdateTransmogModel = UpdateTransmogModel
 
-local function PrintSelectedItemName()
+
+local function PrintSelectedItemName(slotID)
     -- List of transmog slots
     local transmogLocations = {
         [1] = "HeadSlot", -- Head
@@ -316,33 +308,39 @@ local function PrintSelectedItemName()
         [4] = "ShirtSlot" -- Shirt
     }
 
-    for slotID, slotName in pairs(transmogLocations) do
-        -- Create TransmogLocation object for each slot
-        local transmogLocation = TransmogUtil.CreateTransmogLocation(slotID, Enum.TransmogType.Appearance, Enum.TransmogModification.Main)
-        local baseSourceID, baseVisualID, appliedSourceID, appliedVisualID, pendingSourceID, pendingVisualID, hasUndo, isHideVisual, itemSubclass = C_Transmog.GetSlotVisualInfo(transmogLocation)
+    for transmogSlotID, slotName in pairs(transmogLocations) do
+        if not slotID or transmogSlotID == slotID then
+            local transmogLocation = TransmogUtil.CreateTransmogLocation(transmogSlotID, Enum.TransmogType.Appearance, Enum.TransmogModification.Main)
+            local baseSourceID, baseVisualID, appliedSourceID, appliedVisualID, pendingSourceID, pendingVisualID, hasUndo, isHideVisual, itemSubclass = C_Transmog.GetSlotVisualInfo(transmogLocation)
 
-        local itemID = nil
-        if pendingSourceID and pendingSourceID ~= 0 and not isHideVisual then
-            local sourceInfo = C_TransmogCollection.GetSourceInfo(pendingSourceID)
-            if sourceInfo then
-                itemID = sourceInfo.itemID
+            local itemID = nil
+            if pendingSourceID and pendingSourceID ~= 0 and not isHideVisual then
+                local sourceInfo = C_TransmogCollection.GetSourceInfo(pendingSourceID)
+                if sourceInfo then
+                    itemID = sourceInfo.itemID
+                end
+            elseif appliedSourceID and appliedSourceID ~= 0 and not isHideVisual then
+                local sourceInfo = C_TransmogCollection.GetSourceInfo(appliedSourceID)
+                if sourceInfo then
+                    itemID = sourceInfo.itemID
+                end
+            elseif baseSourceID and baseSourceID ~= 0 then
+                local sourceInfo = C_TransmogCollection.GetSourceInfo(baseSourceID)
+                if sourceInfo then
+                    itemID = sourceInfo.itemID
+                end
+            else
+                itemID = GetInventoryItemID("player", transmogSlotID)
             end
-        elseif appliedSourceID and appliedSourceID ~= 0 and not isHideVisual then
-            local sourceInfo = C_TransmogCollection.GetSourceInfo(appliedSourceID)
-            if sourceInfo then
-                itemID = sourceInfo.itemID
-            end
-        elseif baseSourceID and baseSourceID ~= 0 then
-            local sourceInfo = C_TransmogCollection.GetSourceInfo(baseSourceID)
-            if sourceInfo then
-                itemID = sourceInfo.itemID
-            end
-        else
-            itemID = GetInventoryItemID("player", slotID)
-        end
 
-        if itemID then
-            addonTable.ApplyItemToModel(itemID, slotName)
+            if itemID then
+                addonTable.ApplyItemToModel(itemID, slotName)
+            else
+                -- Hide the item if no valid item ID is found
+                if transmogSlotID == 16 or transmogSlotID == 17 then
+                    addonTable.my3DModel:UndressSlot(transmogSlotID)
+                end
+            end
         end
     end
 end
@@ -353,11 +351,11 @@ local function HookTransmogSlots()
     C_Timer.After(1, function()
         local transmogFrame = WardrobeTransmogFrame
         if transmogFrame then
-            for buttonName, slotName in pairs(addonTable.slotNames) do
+            for buttonName, slotID in pairs(addonTable.slotNames) do
                 local slot = transmogFrame[buttonName]
                 if slot then
                     slot:HookScript("OnMouseUp", function()
-                        addonTable.PrintSelectedItemName()
+                        addonTable.PrintSelectedItemName(slotID)
                     end)
                 else
                     C_Timer.After(1, HookTransmogSlots) -- Retry after 1 second
@@ -370,3 +368,39 @@ local function HookTransmogSlots()
 end
 
 addonTable.HookTransmogSlots = HookTransmogSlots
+
+-- Event handling for transmog updates
+local function OnEvent(self, event, ...)
+    local arg1 = ...
+
+    if event == "TRANSMOGRIFY_OPEN" then
+        addonTable.HookTransmogSlots()
+    elseif event == "TRANSMOGRIFY_CLOSE" then
+    elseif event == "TRANSMOGRIFY_SUCCESS" or event == "TRANSMOGRIFY_UPDATE" then
+        local slotID = nil
+
+        if type(arg1) == "table" then
+            -- Check if the table has a slotID field
+            if arg1.slotID then
+                slotID = arg1.slotID
+            else
+                -- Handle unexpected table structure
+            end
+        elseif type(arg1) == "number" then
+            slotID = arg1
+        else
+        end
+
+        if slotID then
+            addonTable.PrintSelectedItemName(slotID)
+        end
+    end
+end
+
+-- Event frame to handle events
+local eventFrame = CreateFrame("Frame")
+eventFrame:RegisterEvent("TRANSMOGRIFY_OPEN")
+eventFrame:RegisterEvent("TRANSMOGRIFY_CLOSE")
+eventFrame:RegisterEvent("TRANSMOGRIFY_SUCCESS")
+eventFrame:RegisterEvent("TRANSMOGRIFY_UPDATE")
+eventFrame:SetScript("OnEvent", OnEvent)

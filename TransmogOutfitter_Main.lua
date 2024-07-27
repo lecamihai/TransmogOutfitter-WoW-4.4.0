@@ -1,39 +1,44 @@
 -- TransmogOutfitter_Main.lua
-
 local addonName, addonTable = ...
 
 -- Create the main frame and handle events
 local my3DFrame, my3DModel
 
 local function OnEvent(self, event, ...)
-    if event == "PLAYER_EQUIPMENT_CHANGED" then
+    local arg1 = ...
+
+    if event == "ADDON_LOADED" then
+        local addon = ...
+        if addon == addonName then
+            addonTable.my3DFrame, addonTable.my3DModel = addonTable.Create3DFrame()
+            addonTable.LoadPresets()
+            addonTable.CreatePresetUI(addonTable.my3DFrame)
+            addonTable.my3DFrame:Hide()
+        end
+    elseif event == "PLAYER_EQUIPMENT_CHANGED" then
         local slotID = ...
         addonTable.PrintSelectedItemName(slotID)
     elseif event == "TRANSMOGRIFY_OPEN" then
         addonTable.HookTransmogSlots()
         addonTable.PrintSelectedItemName(1) -- Initialize with head slot
-        addonTable.my3DFrame:Show() -- Show 3D frame when Transmogrify window is opened
+        addonTable.my3DFrame:Show()
     elseif event == "TRANSMOGRIFY_CLOSE" then
-        addonTable.my3DFrame:Hide() -- Hide 3D frame when Transmogrify window is closed
+        addonTable.my3DFrame:Hide()
     elseif event == "TRANSMOGRIFY_UPDATE" then
         local slotID = ...
         addonTable.PrintSelectedItemName(slotID)
-    elseif event == "ADDON_LOADED" then
-        local addon = ...
-        if addon == addonName then
-            addonTable.LoadPresets()
-            addonTable.CreatePresetUI(addonTable.my3DFrame)
-        end
+    elseif event == "TRANSMOGRIFY_SUCCESS" then
+        local slotID = ...
+        addonTable.PrintSelectedItemName(slotID)
     end
 end
 
-
 local eventFrame = CreateFrame("Frame")
+eventFrame:RegisterEvent("ADDON_LOADED")
 eventFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 eventFrame:RegisterEvent("TRANSMOGRIFY_OPEN")
 eventFrame:RegisterEvent("TRANSMOGRIFY_CLOSE")
 eventFrame:RegisterEvent("TRANSMOGRIFY_UPDATE")
-eventFrame:RegisterEvent("ADDON_LOADED")
 eventFrame:SetScript("OnEvent", OnEvent)
 
 -- Initialize the 3D frame

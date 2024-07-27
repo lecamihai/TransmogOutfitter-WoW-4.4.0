@@ -1,4 +1,3 @@
--- TransmogOutfitter_PresetsUI.lua
 local addonName, addonTable = ...
 
 -- Number of presets
