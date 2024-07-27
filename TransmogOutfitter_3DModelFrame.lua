@@ -52,6 +52,28 @@ addonTable.slotIDs = {
     ["ShirtButton"] = 4,
 }
 
+-- Function to update the size of the 3D model
+local function UpdateModelSize(frame)
+    local modelFrame = addonTable.my3DModel
+    if modelFrame then
+        local width, height = frame:GetSize()
+        modelFrame:SetSize(width, height)
+    end
+end
+
+-- Store zoom level
+local zoomLevel = 1.0
+
+-- Function to set and get zoom level
+local function SetZoomLevel(modelFrame, zoom)
+    modelFrame:SetModelScale(zoom)
+end
+
+local function GetZoomLevel(modelFrame)
+    return modelFrame:GetModelScale()
+end
+
+-- Function to create the 3D frame
 local function Create3DFrame()
     print("Creating 3D Frame")
 
@@ -141,6 +163,9 @@ local function Create3DFrame()
     model:SetUnit("player")
     frame.model = model
 
+    -- Initialize zoom level
+    zoomLevel = GetZoomLevel(model)
+
     local isDragging = false
     local lastMouseX, lastMouseY
     local rotationSpeed = 0.02 -- Rotation speed
@@ -150,12 +175,11 @@ local function Create3DFrame()
     local isCameraMoving = false -- Flag for moving camera
     local currentRotation = 0 -- Current rotation angle
     local currentPitch = 0 -- Current camera pitch
-    local zoom = 1.0 -- Current zoom level
 
     local function OnMouseWheel(self, delta)
-        zoom = zoom + (delta * zoomSpeed)
-        zoom = math.max(zoom, 0.1) -- Prevent zoom out too far
-        model:SetModelScale(zoom)
+        zoomLevel = zoomLevel + (delta * zoomSpeed)
+        zoomLevel = math.max(zoomLevel, 0.1) -- Prevent zoom out too far
+        SetZoomLevel(model, zoomLevel)
     end
 
     local function OnMouseDown(self, button)
@@ -209,7 +233,7 @@ local function Create3DFrame()
 
             -- Adjust model size
             local newScale = height / 600 -- Adjusted scale factor for more gradual resizing
-            frame.model:SetModelScale(newScale)
+            SetZoomLevel(frame.model, zoomLevel) -- Keep zoom level consistent
             frame.model:SetSize(width, height - 30) -- Adjust model size to match frame size
         end
     end
@@ -242,6 +266,14 @@ local function Create3DFrame()
         end
     end)
 
+    -- Handle resizing of the frame
+    frame:SetScript("OnSizeChanged", function(self)
+        UpdateModelSize(self)
+    end)
+
+    -- Initial size update
+    UpdateModelSize(frame)
+
     print("3D Frame created successfully")
     return frame, model
 end
@@ -264,7 +296,6 @@ local function UpdateTransmogModel()
 end
 
 addonTable.UpdateTransmogModel = UpdateTransmogModel
-
 
 local function PrintSelectedItemName()
     -- List of transmog slots
@@ -339,4 +370,3 @@ local function HookTransmogSlots()
 end
 
 addonTable.HookTransmogSlots = HookTransmogSlots
-
