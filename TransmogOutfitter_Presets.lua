@@ -1,4 +1,3 @@
--- TransmogOutfitter_Presets.lua
 local addonName, addonTable = ...
 
 addonTable.savedPresets = addonTable.savedPresets or {}
@@ -6,9 +5,7 @@ addonTable.savedPresets = addonTable.savedPresets or {}
 local function LoadPresets()
     if TransmogOutfitter_SavedPresets then
         addonTable.savedPresets = TransmogOutfitter_SavedPresets
-        print("Loaded presets:", addonTable.savedPresets)
         for index, preset in ipairs(addonTable.savedPresets) do
-            print("Loading preset index:", index, "with data:", preset)
             if addonTable.modelFrames and addonTable.modelFrames[index] then
                 local model = addonTable.modelFrames[index]
                 model:Undress()
@@ -21,15 +18,14 @@ local function LoadPresets()
         end
     else
         addonTable.savedPresets = {}
-        print("No presets found, initializing empty presets.")
     end
 end
 
 addonTable.LoadPresets = LoadPresets
 
+-- TransmogOutfitter_Presets.lua
 local function SavePresets()
     TransmogOutfitter_SavedPresets = addonTable.savedPresets
-    print("Saved presets:", TransmogOutfitter_SavedPresets)
 end
 
 addonTable.SavePresets = SavePresets
@@ -97,8 +93,6 @@ local function SavePreset(index)
     if preset[17] and preset[17].itemID then
         presetModel:TryOn("item:" .. preset[17].itemID)
     end
-
-    print("Preset saved.")
 end
 
 addonTable.SavePreset = SavePreset
@@ -112,7 +106,6 @@ end
 local function LoadPreset(index)
     local preset = addonTable.savedPresets[index]
     if not preset then
-        print("No preset found for index:", index)
         return
     end
 
@@ -131,14 +124,12 @@ local function LoadPreset(index)
             local transmogLocation = TransmogUtil.CreateTransmogLocation(slotID, Enum.TransmogType.Appearance, Enum.TransmogModification.Main)
             local pendingInfo = CreatePendingInfo(data.sourceID)
 
-            if type(transmogLocation) ~= "table" or not pendingInfo.transmogID then
-                print("Invalid transmogLocation or pendingInfo for SlotID:", slotID)
-            else
+            if type(transmogLocation) == "table" and pendingInfo.transmogID then
                 local success, err = pcall(function()
                     C_Transmog.SetPending(transmogLocation, pendingInfo)
                 end)
                 if not success then
-                    print("Error setting pending transmog for SlotID:", slotID, err)
+                    -- Handle error here if necessary
                 end
             end
         end
@@ -147,8 +138,6 @@ local function LoadPreset(index)
     if WardrobeTransmogFrame and WardrobeTransmogFrame.Update then
         WardrobeTransmogFrame:Update()
     end
-
-    print("Preset loaded for index:", index)
 end
 
 addonTable.LoadPreset = LoadPreset

@@ -282,12 +282,10 @@ addonTable.ApplyItemToModel = ApplyItemToModel
 
 local function UpdateTransmogModel()
     addonTable.my3DModel:Undress() -- Reset the model
-    addonTable.PrintSelectedItemName()
     addonTable.my3DModel:RefreshUnit() -- Refresh the model
 end
 
 addonTable.UpdateTransmogModel = UpdateTransmogModel
-
 
 local function PrintSelectedItemName(slotID)
     -- List of transmog slots
@@ -375,7 +373,6 @@ local function OnEvent(self, event, ...)
 
     if event == "TRANSMOGRIFY_OPEN" then
         addonTable.HookTransmogSlots()
-    elseif event == "TRANSMOGRIFY_CLOSE" then
     elseif event == "TRANSMOGRIFY_SUCCESS" or event == "TRANSMOGRIFY_UPDATE" then
         local slotID = nil
 
