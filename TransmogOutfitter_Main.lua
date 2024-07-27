@@ -1,4 +1,4 @@
--- TransmogOutfitter_Main.lua
+
 local addonName, addonTable = ...
 
 -- Create the main frame and handle events

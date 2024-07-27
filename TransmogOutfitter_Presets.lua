@@ -1,4 +1,3 @@
--- TransmogOutfitter_Presets.lua
 local addonName, addonTable = ...
 
 addonTable.savedPresets = addonTable.savedPresets or {}
@@ -13,49 +12,125 @@ end
 
 addonTable.LoadPresets = LoadPresets
 
+local function SavePresets()
+    TransmogOutfitter_SavedPresets = addonTable.savedPresets
+end
+
+addonTable.SavePresets = SavePresets
+
 local function SavePreset(index)
     local preset = {}
     preset.name = UnitName("player") -- Save the character's name as the preset name
 
-    for buttonName, slotName in pairs(addonTable.slotNames) do
-        local slotID = addonTable.slotIDs[buttonName]
+    for buttonName, slotID in pairs(addonTable.slotNames) do
         if slotID then
             local transmogLocation = TransmogUtil.CreateTransmogLocation(slotID, Enum.TransmogType.Appearance, Enum.TransmogModification.Main)
-            local _, _, _, _, pendingSourceID, _, _, _, _ = C_Transmog.GetSlotVisualInfo(transmogLocation)
-            local itemID = GetInventoryItemID("player", slotID)
+            local baseSourceID, baseVisualID, appliedSourceID, appliedVisualID, pendingSourceID, pendingVisualID, hasUndo, isHideVisual, itemSubclass = C_Transmog.GetSlotVisualInfo(transmogLocation)
+            
+            local sourceID
             if pendingSourceID and pendingSourceID ~= 0 then
-                local sourceInfo = C_TransmogCollection.GetSourceInfo(pendingSourceID)
+                sourceID = pendingSourceID
+            elseif appliedSourceID and appliedSourceID ~= 0 then
+                sourceID = appliedSourceID
+            elseif baseSourceID and baseSourceID ~= 0 then
+                sourceID = baseSourceID
+            end
+            
+            if sourceID then
+                local sourceInfo = C_TransmogCollection.GetSourceInfo(sourceID)
                 if sourceInfo then
-                    preset[slotName] = sourceInfo.itemID
+                    preset[slotID] = {
+                        itemID = sourceInfo.itemID,
+                        sourceID = sourceID,
+                        visualID = sourceInfo.visualID,
+                        name = sourceInfo.name
+                    }
+                else
+                    preset[slotID] = {
+                        itemID = nil,
+                        sourceID = sourceID,
+                        visualID = nil,
+                        name = "Unknown"
+                    }
                 end
-            elseif itemID then
-                preset[slotName] = itemID
+            else
+                preset[slotID] = {
+                    itemID = nil,
+                    sourceID = nil,
+                    visualID = nil,
+                    name = "Unknown"
+                }
             end
         end
     end
 
     addonTable.savedPresets[index] = preset
-    TransmogOutfitter_SavedPresets = addonTable.savedPresets
+    SavePresets()
 
-    -- Update the corresponding preset 3D model
     local presetModel = addonTable.modelFrames[index]
     presetModel:Undress()
-    for slotName, itemID in pairs(preset) do
-        presetModel:TryOn("item:" .. itemID)
+    for slotID, data in pairs(preset) do
+        if data.itemID then
+            presetModel:TryOn("item:" .. data.itemID)
+        end
     end
+
+    if preset[16] and preset[16].itemID then
+        presetModel:TryOn("item:" .. preset[16].itemID)
+    end
+    if preset[17] and preset[17].itemID then
+        presetModel:TryOn("item:" .. preset[17].itemID)
+    end
+
+    print("Preset saved.")
 end
 
 addonTable.SavePreset = SavePreset
 
+local function CreatePendingInfo(sourceID)
+    local pendingInfo = CreateFromMixins(TransmogPendingInfoMixin)
+    pendingInfo:Init(Enum.TransmogPendingType.Apply, sourceID, Enum.TransmogCollectionType.Appearance)
+    return pendingInfo
+end
+
 local function LoadPreset(index)
     local preset = addonTable.savedPresets[index]
-    if not preset then return end
-    
-    addonTable.my3DModel:Undress()
-    for slotName, itemID in pairs(preset) do
-        addonTable.ApplyItemToModel(itemID, slotName)
+    if not preset then
+        print("No preset found for index:", index)
+        return
     end
+
+    addonTable.my3DModel:Undress()
+    
+    for slotID, data in pairs(preset) do
+        if type(slotID) == "number" and data.itemID then
+            addonTable.ApplyItemToModel(data.itemID, addonTable.slotIDs[slotID])
+        end
+    end
+    
     addonTable.my3DModel:RefreshUnit()
+
+    for slotID, data in pairs(preset) do
+        if type(slotID) == "number" and data.sourceID then
+            local transmogLocation = TransmogUtil.CreateTransmogLocation(slotID, Enum.TransmogType.Appearance, Enum.TransmogModification.Main)
+            local pendingInfo = CreatePendingInfo(data.sourceID)
+
+            if type(transmogLocation) ~= "table" or not pendingInfo.transmogID then
+                print("Invalid transmogLocation or pendingInfo for SlotID:", slotID)
+            else
+                local success, err = pcall(function()
+                    C_Transmog.SetPending(transmogLocation, pendingInfo)
+                end)
+                if not success then
+                    print("Error setting pending transmog for SlotID:", slotID, err)
+                end
+            end
+        end
+    end
+
+    if WardrobeTransmogFrame and WardrobeTransmogFrame.Update then
+        WardrobeTransmogFrame:Update()
+    end
 end
 
 addonTable.LoadPreset = LoadPreset
@@ -81,7 +156,7 @@ local function ShowSavedPresets(frame)
         local button = CreateFrame("Button", nil, presetsFrame, "UIPanelButtonTemplate")
         button:SetSize(180, 20)
         button:SetPoint("TOP", presetsFrame, "TOP", 0, yOffset)
-        button:SetText(preset.name or "Preset " .. i) -- Show the character's name or preset index
+        button:SetText(preset.name or "Preset " .. i)
         button:SetScript("OnClick", function() addonTable.LoadPreset(i) end)
         yOffset = yOffset - 25
     end
@@ -93,7 +168,7 @@ local function ShowSavedPresets(frame)
     saveButton:SetScript("OnClick", function()
         local index = #addonTable.savedPresets + 1
         addonTable.SavePreset(index)
-        presetsFrame:Hide() -- Refresh the presets list
+        presetsFrame:Hide()
         ShowSavedPresets(frame)
     end)
 end

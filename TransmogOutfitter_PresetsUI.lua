@@ -1,9 +1,7 @@
 local addonName, addonTable = ...
 
--- Number of presets
 local NUM_PRESETS = 6
 
--- Function to create the preset UI
 local function CreatePresetUI(parentFrame)
     local presetFrame = CreateFrame("Frame", "PresetFrame", parentFrame, "BackdropTemplate")
     presetFrame:SetBackdrop({
@@ -21,7 +19,7 @@ local function CreatePresetUI(parentFrame)
     local modelFrames = {}
     local maxColumns = 3
     local presetWidth = 180
-    local presetHeight = 210 -- Height of each preset model and buttons
+    local presetHeight = 210
 
     for i = 1, NUM_PRESETS do
         local row = math.floor((i - 1) / maxColumns)
@@ -31,12 +29,13 @@ local function CreatePresetUI(parentFrame)
         modelFrame:SetSize(presetWidth, presetHeight - 60)
         modelFrame:SetPoint("TOPLEFT", presetFrame, "TOPLEFT", 10 + col * (presetWidth + 10), -40 - row * presetHeight)
         modelFrame:SetUnit("player")
+        modelFrame:Undress()
         modelFrames[i] = modelFrame
 
         local button = CreateFrame("Button", nil, modelFrame, "UIPanelButtonTemplate")
         button:SetSize(presetWidth, 20)
         button:SetPoint("TOP", modelFrame, "BOTTOM", 0, -5)
-        button:SetText("Load Preset " .. i)
+        button:SetText(addonTable.savedPresets[i] and addonTable.savedPresets[i].name or "Load Preset " .. i)
         button:SetScript("OnClick", function() addonTable.LoadPreset(i) end)
 
         local saveButton = CreateFrame("Button", nil, modelFrame, "UIPanelButtonTemplate")
@@ -44,6 +43,10 @@ local function CreatePresetUI(parentFrame)
         saveButton:SetPoint("TOP", button, "BOTTOM", 0, -5)
         saveButton:SetText("Save Preset " .. i)
         saveButton:SetScript("OnClick", function() addonTable.SavePreset(i) end)
+
+        -- Save reference to the buttons for later updates
+        addonTable.presetFrame.buttons = addonTable.presetFrame.buttons or {}
+        addonTable.presetFrame.buttons[i] = button
     end
 
     local numRows = math.ceil(NUM_PRESETS / maxColumns)
@@ -54,6 +57,17 @@ local function CreatePresetUI(parentFrame)
 
     presetFrame:SetPoint("TOPLEFT", parentFrame, "TOPRIGHT", 10, 0)
     presetFrame:Hide()
+
+    local deleteCacheButton = CreateFrame("Button", nil, presetFrame, "UIPanelButtonTemplate")
+    deleteCacheButton:SetSize(100, 20)
+    deleteCacheButton:SetPoint("TOPRIGHT", presetFrame, "TOPRIGHT", -10, -10)
+    deleteCacheButton:SetText("Delete Cache")
+    deleteCacheButton:SetScript("OnClick", function()
+        addonTable.savedPresets = {}
+        addonTable.SavePresets()
+        presetFrame:Hide()
+        ShowSavedPresets(parentFrame)
+    end)
 
     addonTable.presetFrame = presetFrame
     addonTable.modelFrames = modelFrames

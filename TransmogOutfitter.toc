@@ -3,6 +3,7 @@
 ## Notes: Adds a 3D popup for character transmogrification.
 ## Author: L3ca
 ## Version: 1.0
+## SavedVariables: TransmogOutfitter_SavedPresets
 
 TransmogOutfitter_3DModelFrame.lua
 TransmogOutfitter_Presets.lua
