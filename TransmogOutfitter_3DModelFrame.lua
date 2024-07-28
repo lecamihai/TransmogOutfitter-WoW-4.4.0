@@ -1,4 +1,3 @@
--- TransmogOutfitter_3DModelFrame.lua
 local addonName, addonTable = ...
 
 addonTable = addonTable or {}
@@ -60,7 +59,6 @@ local function GetZoomLevel(modelFrame)
     return modelFrame:GetModelScale()
 end
 
--- Function to create the 3D frame
 local function Create3DFrame()
     -- Create the main frame with BackdropTemplate
     local frame = CreateFrame("Frame", "My3DFrame", UIParent, "BackdropTemplate")
@@ -143,7 +141,7 @@ local function Create3DFrame()
     -- Add model
     local model = CreateFrame("DressUpModel", nil, frame)
     model:SetPoint("TOP", titleBar, "BOTTOM", 0, -10)
-    model:SetPoint("BOTTOM", frame, "BOTTOM", 0, 10)
+    model:SetPoint("BOTTOM", frame, "BOTTOM", 0, 40) -- Adjusted size to fit below the title bar
     model:SetSize(300, 360) -- Adjusted size to fit below the title bar
     model:SetUnit("player")
     frame.model = model
@@ -219,7 +217,7 @@ local function Create3DFrame()
             -- Adjust model size
             local newScale = height / 600 -- Adjusted scale factor for more gradual resizing
             SetZoomLevel(frame.model, zoomLevel) -- Keep zoom level consistent
-            frame.model:SetSize(width, height - 30) -- Adjust model size to match frame size
+            frame.model:SetSize(width, height - 70) -- Adjust model size to match frame size and fit below the button
         end
     end
 
@@ -238,16 +236,17 @@ local function Create3DFrame()
         frame:StopMovingOrSizing()
     end)
 
-    -- Add a button to show saved presets
-    local presetsButton = CreateFrame("Button", nil, titleBar, "UIPanelButtonTemplate")
+    -- Add a button to show saved presets at the bottom
+    local presetsButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
     presetsButton:SetSize(100, 20)
-    presetsButton:SetPoint("RIGHT", titleText, "LEFT", -10, 0)
-    presetsButton:SetText("Saved Presets")
+    presetsButton:SetPoint("BOTTOM", frame, "BOTTOM", 0, 10)
+    presetsButton:SetText("Show Presets")
     presetsButton:SetScript("OnClick", function()
         if addonTable.presetFrame:IsShown() then
             addonTable.presetFrame:Hide()
         else
             addonTable.presetFrame:Show()
+            addonTable.LoadPresets() -- Reload the presets when showing the frame
         end
     end)
 
